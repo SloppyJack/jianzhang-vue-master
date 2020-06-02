@@ -3,19 +3,19 @@ const recordAccountRouter = {
   name: null,
   title: '记账',
   type: 'folder', // 类型: folder, tab, view
-  icon: 'iconfont icon-shili',
-  filePath: 'view/book/', // 文件路径
-  order: null,
+  icon: 'iconfont icon-gengduo',
+  filePath: 'view/recordAccount/', // 文件路径
+  order: 3,
   inNav: true,
   children: [
     {
       title: '开始记账',
       type: 'view',
-      name: 'BookCreate',
-      route: '/book/add',
-      filePath: 'view/book/book-create.vue',
+      name: 'RecordAccountCreate',
+      route: '/recordAccount/add',
+      filePath: 'view/recordAccount/record-create.vue',
       inNav: true,
-      icon: 'iconfont icon-tushuguanli',
+      icon: 'iconfont icon-gengduo',
     }
   ],
 }
