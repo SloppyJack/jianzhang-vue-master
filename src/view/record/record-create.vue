@@ -46,6 +46,8 @@
 </template>
 
 <script>
+import record from '@/model/record'
+
 export default {
   data() {
     const checkAmount = (rule, value, callback) => {
@@ -129,7 +131,16 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
-          console.log('submit!!')
+          try {
+            const res = record.createRecord(this.form)
+            if (res.code < window.MAX_SUCCESS_CODE) {
+              this.$message.success(`${res.message}`)
+              this.resetForm(formName)
+            }
+          } catch (error) {
+            this.$message.error('记账失败，请检测填写信息')
+            console.log(error)
+          }
         } else {
           console.log('error submit!!')
           return false
