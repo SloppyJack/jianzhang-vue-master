@@ -136,6 +136,7 @@ export default {
         if (valid) {
           this.loading = true // loading状态
           try {
+            console.log(this.form)
             const res = await record.createRecord(this.form)
             this.loading = false
             this.$message.success(`${res.message}`)
