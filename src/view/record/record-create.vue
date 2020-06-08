@@ -2,30 +2,30 @@
     <div class="lin-container">
         <div class="lin-title">记一笔</div>
         <div class="lin-wrap-ui">
-            <el-card style="margin-bottom:50px;">
+            <el-card style="margin-bottom:50px;" v-loading="loading">
                 <div slot="header"><span>支出与收入</span></div>
                 <el-form>
                     <el-row>
                         <el-col :lg="16" :md="20" :sm="24" :xs="24">
                             <el-form :model="form" :rules="rules" ref="form" label-width="100px" @submit.native.prevent>
-                                <el-tabs v-model="activeName"  @tab-click="handleClick">
-                                    <el-tab-pane label="支出" name="first">
+                                <el-tabs v-model="form.type"  @tab-click="handleClick">
+                                    <el-tab-pane label="支出" name="1">
 
                                     </el-tab-pane>
-                                    <el-tab-pane label="收入" name="second">
-                                        <el-form-item label="类型" prop="incomeType">
-                                            <el-select  size="medium"  v-model="form.incomeType" placeholder="请选择" style="width: 100%;">
+                                    <el-tab-pane label="收入" name="2">
+                                        <el-form-item label="类型" prop="spend_category">
+                                            <el-select  size="medium"  v-model="form.spend_category" placeholder="请选择" style="width: 100%;">
                                                 <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
                                                 </el-option>
                                             </el-select>
                                         </el-form-item>
-                                        <el-form-item label="收入" prop="incomeAmount">
-                                            <el-input-number v-model="form.incomeAmount" size="min" :min="0" :precision="2" :step="5" style="width: 100%;"></el-input-number>
+                                        <el-form-item label="收入" prop="amount">
+                                            <el-input-number v-model="form.amount" size="min" :min="0" :precision="2" :step="5" style="width: 100%;"></el-input-number>
                                         </el-form-item>
                                     </el-tab-pane>
                                 </el-tabs>
-                                <el-form-item label="发生时间" prop="date">
-                                    <el-date-picker v-model="form.date" align="right" type="date" placeholder="选择日期" :picker-options="pickerOptions" style="width: 100%;">
+                                <el-form-item label="发生时间" prop="occur_time">
+                                    <el-date-picker v-model="form.occur_time" align="right" type="date" placeholder="选择日期" :picker-options="pickerOptions" style="width: 100%;">
                                     </el-date-picker>
                                 </el-form-item>
                                 <el-form-item label="备注" prop="remarks">
@@ -48,6 +48,8 @@
 <script>
 import record from '@/model/record'
 
+const DEFAULT_TYPE = '2'
+
 export default {
   data() {
     const checkAmount = (rule, value, callback) => {
@@ -58,14 +60,13 @@ export default {
       }
     }
     return {
-      activeName: 'second',
       options: [
         {
           value: '1',
           label: '工资',
         },
         {
-          value: '2',
+          value: 2,
           label: '兼职',
         },
         {
@@ -103,46 +104,49 @@ export default {
         }]
       },
       form: {
-        incomeType: '',
-        incomeAmount: '',
-        date: '',
+        type: DEFAULT_TYPE,
+        spend_category: '',
+        amount: '',
+        occur_time: '',
         remarks: ''
       },
       rules: {
-        incomeType: [
-          { required: true, message: '请选择收入类型', trigger: 'change' }
+        spend_category: [
+          { required: true, message: '请选择收入或支出类型', trigger: 'change' }
         ],
-        incomeAmount: [
+        amount: [
           { validator: checkAmount, trigger: 'change' }
         ],
-        date: [
+        occurTime: [
           { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
         ]
-      }
+      },
+      loading: false
     }
   },
   methods: {
-    handleClick(val) {
-      this.$message(`点击了 ${val}`)
+    handleClick() {
+      this.$message(`点击了 ${this.form.type}`)
     },
     handleCommand(command) {
       this.$message(`点击了 ${command}`)
     },
     submitForm(formName) {
-      this.$refs[formName].validate(valid => {
+      this.$refs[formName].validate(async valid => {
         if (valid) {
+          this.loading = true // loading状态
           try {
-            const res = record.createRecord(this.form)
+            const res = await record.createRecord(this.form)
+            this.loading = false
+            this.$message.success(`${res.message}`)
             if (res.code < window.MAX_SUCCESS_CODE) {
-              this.$message.success(`${res.message}`)
               this.resetForm(formName)
             }
           } catch (error) {
-            this.$message.error('记账失败，请检测填写信息')
-            console.log(error)
+            this.loading = false
+            console.log(`记账异常，msg：${error}`)
           }
         } else {
-          console.log('error submit!!')
           return false
         }
       })
