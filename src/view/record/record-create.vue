@@ -8,18 +8,15 @@
                     <el-row>
                         <el-col :lg="16" :md="20" :sm="24" :xs="24">
                             <el-form :model="form" :rules="rules" ref="form" label-width="100px" @submit.native.prevent>
-                                <el-tabs v-model="form.type"  @tab-click="handleClick">
-                                    <el-tab-pane label="支出" name="1">
-
-                                    </el-tab-pane>
-                                    <el-tab-pane label="收入" name="2">
+                                <el-tabs v-model="form.record_type"  @tab-click="handleClick">
+                                    <el-tab-pane v-for="recordType in recordTypes" :key="recordType.code" :label="recordType.name" :name="recordType.id">
                                         <el-form-item label="类型" prop="spend_category">
                                             <el-select  size="medium"  v-model="form.spend_category" placeholder="请选择" style="width: 100%;">
                                                 <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
                                                 </el-option>
                                             </el-select>
                                         </el-form-item>
-                                        <el-form-item label="收入" prop="amount">
+                                        <el-form-item label="金额" prop="amount">
                                             <el-input-number v-model="form.amount" size="min" :min="0" :precision="2" :step="5" style="width: 100%;"></el-input-number>
                                         </el-form-item>
                                     </el-tab-pane>
@@ -47,8 +44,9 @@
 
 <script>
 import record from '@/model/record'
+import recordType from '@/model/recordType'
 
-const DEFAULT_TYPE = '2'
+const DEFAULT_RECORD_TYPE = '2'
 
 export default {
   data() {
@@ -60,24 +58,8 @@ export default {
       }
     }
     return {
-      options: [
-        {
-          value: '1',
-          label: '工资',
-        },
-        {
-          value: 2,
-          label: '兼职',
-        },
-        {
-          value: '3',
-          label: '理财',
-        },
-        {
-          value: '4',
-          label: '其他',
-        }
-      ],
+      recordTypes: [],
+      options: [],
       pickerOptions: {
         disabledDate(time) {
           return time.getTime() > Date.now()
@@ -104,7 +86,7 @@ export default {
         }]
       },
       form: {
-        type: DEFAULT_TYPE,
+        record_type: DEFAULT_RECORD_TYPE,
         spend_category: '',
         amount: '',
         occur_time: '',
@@ -124,9 +106,12 @@ export default {
       loading: false
     }
   },
+  created() {
+    this.getRecordTypes()
+  },
   methods: {
-    handleClick() {
-      this.$message(`点击了 ${this.form.type}`)
+    handleClick(obj) {
+      this.$message(`您现在是在 ${obj.$options.propsData.label}`)
     },
     handleCommand(command) {
       this.$message(`点击了 ${command}`)
@@ -154,6 +139,22 @@ export default {
     },
     resetForm(formName) {
       this.$refs[formName].resetFields()
+    },
+    async getRecordTypes() {
+      this.loading = true // loading状态
+      try {
+        const res = await recordType.getRecordTypes()
+        // eslint-disable-next-line
+        res.forEach((item,index) => {
+          // 此处将后端返回的id转为String
+          item.id = item.id.toString()
+          this.recordTypes.push(item)
+        })
+        this.loading = false
+      } catch (error) {
+        this.loading = false
+        console.log(`获取记账类型异常，msg：${error}`)
+      }
     }
   }
 
