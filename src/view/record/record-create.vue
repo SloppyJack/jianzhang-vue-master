@@ -2,7 +2,7 @@
     <div class="lin-container">
         <div class="lin-title">记一笔</div>
         <div class="lin-wrap-ui">
-            <el-card style="margin-bottom:50px;" v-loading="loading">
+            <el-card style="margin-bottom:50px;" v-loading="card_loading">
                 <div slot="header"><span>支出与收入</span></div>
                 <el-form>
                     <el-row>
@@ -11,7 +11,8 @@
                                 <el-tabs v-model="form.record_type"  @tab-click="handleClick">
                                     <el-tab-pane v-for="recordType in recordTypes" :key="recordType.code" :label="recordType.name" :name="recordType.id">
                                         <el-form-item label="类型" prop="spend_category">
-                                            <el-select  size="medium"  v-model="form.spend_category" placeholder="请选择" style="width: 100%;">
+                                            <el-select size="medium" :loading="select_loading" @focus="getSpendCategory"
+                                                        v-model="form.spend_category" placeholder="请选择" style="width: 100%;">
                                                 <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
                                                 </el-option>
                                             </el-select>
@@ -45,6 +46,7 @@
 <script>
 import record from '@/model/record'
 import recordType from '@/model/recordType'
+import spendCategory from '@/model/spendCategory'
 
 const DEFAULT_RECORD_TYPE = '2'
 
@@ -103,7 +105,8 @@ export default {
           { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
         ]
       },
-      loading: false
+      card_loading: false,
+      select_loading: false
     }
   },
   created() {
@@ -141,7 +144,7 @@ export default {
       this.$refs[formName].resetFields()
     },
     async getRecordTypes() {
-      this.loading = true // loading状态
+      this.card_loading = true // loading状态
       try {
         const res = await recordType.getRecordTypes()
         // eslint-disable-next-line
@@ -150,11 +153,17 @@ export default {
           item.id = item.id.toString()
           this.recordTypes.push(item)
         })
-        this.loading = false
+        this.card_loading = false
       } catch (error) {
-        this.loading = false
+        this.card_loading = false
         console.log(`获取记账类型异常，msg：${error}`)
       }
+    },
+    async getSpendCategory() {
+      this.select_loading = true
+      this.$message.success('远程调用开始')
+      const res = spendCategory.getSpendCategoryList()
+      this.$message.success(`${res}`)
     }
   }
 
