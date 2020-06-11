@@ -1,5 +1,5 @@
 // eslint-disable-next-line
-import _axios, { get, put, _delete } from '@/lin/plugin/axios'
+import _axios from '@/lin/plugin/axios'
 
 class SpendCategory {
   getSpendCategoryList() {

@@ -143,6 +143,7 @@ export default {
     resetForm(formName) {
       this.$refs[formName].resetFields()
     },
+    // 获取记录的类型列表
     async getRecordTypes() {
       this.card_loading = true // loading状态
       try {
@@ -159,11 +160,28 @@ export default {
         console.log(`获取记账类型异常，msg：${error}`)
       }
     },
+    // 获取花费类型列表
     async getSpendCategory() {
       this.select_loading = true
-      this.$message.success('远程调用开始')
-      const res = spendCategory.getSpendCategoryList()
-      this.$message.success(`${res}`)
+      try {
+        const res = await spendCategory.getSpendCategoryList()
+        this.select_loading = false
+        // 搜索前情况options数组
+        this.options = []
+        // eslint-disable-next-line
+        res.forEach((item,index) => {
+          // 此处将后端返回的id转为String
+          item.id = item.id.toString()
+          const val = item.id.toString()
+          const label = item.name.toString()
+          // eslint-disable-next-line
+          const option = { 'value': val, 'label': label }
+          this.options.push(option)
+        })
+      } catch (error) {
+        this.select_loading = false
+        console.log(`获取记账类型异常，msg：${error}`)
+      }
     }
   }
 
