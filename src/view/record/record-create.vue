@@ -115,6 +115,7 @@ export default {
   methods: {
     handleClick(obj) {
       this.$message(`您现在是在 ${obj.$options.propsData.label}`)
+      this.resetForm('form')
     },
     handleCommand(command) {
       this.$message(`点击了 ${command}`)
@@ -164,7 +165,7 @@ export default {
     async getSpendCategory() {
       this.select_loading = true
       try {
-        const res = await spendCategory.getSpendCategoryList()
+        const res = await spendCategory.getSpendCategory(this.form.record_type)
         this.select_loading = false
         // 搜索前情况options数组
         this.options = []
