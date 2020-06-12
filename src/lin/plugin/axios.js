@@ -130,7 +130,7 @@ _axios.interceptors.response.use(
         const cache = {}
         if (cache.url !== url) {
           cache.url = url
-          const refreshResult = await _axios('ve cms/user/refresh')
+          const refreshResult = await _axios('cms/user/refresh')
           saveAccessToken(refreshResult.access_token)
           // 将上次失败请求重发
           const result = await _axios(res.config)

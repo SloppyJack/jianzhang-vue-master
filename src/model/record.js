@@ -32,10 +32,10 @@ class Record {
     return res
   }
 
-  async getBooks() {
+  async getRecords() {
     return _axios({
       method: 'get',
-      url: 'v1/book',
+      url: 'v1/record/list',
       handleError: true,
     })
   }
