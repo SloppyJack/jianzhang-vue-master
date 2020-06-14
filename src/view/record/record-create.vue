@@ -4,40 +4,36 @@
         <div class="lin-wrap-ui">
             <el-card style="margin-bottom:50px;" v-loading="card_loading">
                 <div slot="header"><span>支出与收入</span></div>
-                <el-form>
-                    <el-row>
-                        <el-col :lg="16" :md="20" :sm="24" :xs="24">
-                            <el-form :model="form" :rules="rules" ref="form" label-width="100px" @submit.native.prevent>
-                                <el-tabs v-model="form.record_type"  @tab-click="handleClick">
-                                    <el-tab-pane v-for="recordType in recordTypes" :key="recordType.code" :label="recordType.name" :name="recordType.id">
-                                        <el-form-item label="类型" prop="spend_category">
-                                            <el-select size="medium" :loading="select_loading" @focus="getSpendCategory"
-                                                        v-model="form.spend_category" placeholder="请选择" style="width: 100%;">
-                                                <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
-                                                </el-option>
-                                            </el-select>
-                                        </el-form-item>
-                                        <el-form-item label="金额" prop="amount">
-                                            <el-input-number v-model="form.amount" size="min" :min="0" :precision="2" :step="5" style="width: 100%;"></el-input-number>
-                                        </el-form-item>
-                                    </el-tab-pane>
-                                </el-tabs>
-                                <el-form-item label="发生时间" prop="occur_time">
-                                    <el-date-picker v-model="form.occur_time" align="right" type="date" placeholder="选择日期" :picker-options="pickerOptions" style="width: 100%;">
-                                    </el-date-picker>
+                <el-col :lg="16" :md="20" :sm="24" :xs="24">
+                    <el-form :model="form" :rules="rules" ref="form" label-width="100px" @submit.native.prevent>
+                        <el-tabs v-model="form.record_type"  @tab-click="handleClick">
+                            <el-tab-pane v-for="recordType in recordTypes" :key="recordType.code" :label="recordType.name" :name="recordType.id">
+                                <el-form-item label="类型" prop="spend_category">
+                                    <el-select size="medium" :loading="select_loading" @focus="getSpendCategory"
+                                                v-model="form.spend_category" placeholder="请选择" style="width: 100%;">
+                                        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+                                        </el-option>
+                                    </el-select>
                                 </el-form-item>
-                                <el-form-item label="备注" prop="remarks">
-                                    <el-input placeholder="备注内容" size="medium" suffix-icon="el-icon-edit" v-model="form.remarks" style="width: 100%;">
-                                    </el-input>
+                                <el-form-item label="金额" prop="amount">
+                                    <el-input-number v-model="form.amount" size="min" :min="0" :precision="2" :step="5" style="width: 100%;"></el-input-number>
                                 </el-form-item>
-                                <el-form-item class="submit">
-                                    <el-button type="primary" @click="submitForm('form')">保 存</el-button>
-                                    <el-button @click="resetForm('form')">重 置</el-button>
-                                </el-form-item>
-                            </el-form>
-                        </el-col>
-                    </el-row>
-                </el-form>
+                            </el-tab-pane>
+                        </el-tabs>
+                        <el-form-item label="发生时间" prop="occur_time">
+                            <el-date-picker v-model="form.occur_time" align="right" type="date" placeholder="选择日期" :picker-options="pickerOptions" style="width: 100%;">
+                            </el-date-picker>
+                        </el-form-item>
+                        <el-form-item label="备注" prop="remarks">
+                            <el-input placeholder="备注内容" size="medium" suffix-icon="el-icon-edit" v-model="form.remarks" style="width: 100%;">
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item class="submit">
+                            <el-button type="primary" @click="submitForm('form')">保 存</el-button>
+                            <el-button @click="resetForm('form')">重 置</el-button>
+                        </el-form-item>
+                    </el-form>
+                </el-col>
             </el-card>
         </div>
     </div>
