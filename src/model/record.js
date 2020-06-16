@@ -40,5 +40,4 @@ class Record {
     })
   }
 }
-
 export default new Record()

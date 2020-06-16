@@ -16,15 +16,15 @@
         :data="tableData"
         @row-click="rowClick"
         @expand-change="expandChange"
-        :expand-row-keys="expends"
+        ref="refTable"
         height="600"
         v-loading="loading"
       >
         <el-table-column type="expand">
               <template slot-scope="props">
                 <div>
-                  <el-form label-width="100px">
-                    <el-form-item label="花费类别">
+                  <el-form :model="form" label-width="100px">
+                    <el-form-item label="花费类别" prop="spend_category">
                       <el-input placeholder="备注内容" size="medium" suffix-icon="el-icon-edit"
                                 v-model="props.row.spend_category.name" :disabled="true" style="width: 50%;">
                       </el-input>
@@ -52,8 +52,17 @@
         </el-table-column>
         <el-table-column fixed="right" label="操作" width="200">
           <template slot-scope="scope">
-          <el-button @click="handleClick(scope.row)" type="primary" size="small">编辑</el-button>
-          <el-button type="danger" size="small">删除</el-button>
+              <el-row :gutter="20">
+                  <transition name="el-zoom-in-top">
+                      <!-- 使用@click.stop防止点击事件冒泡 -->
+                      <el-button v-show="!showSaveFlag" @click.stop="editRow(scope.row)" type="primary" size="small" round>编辑</el-button>
+                  </transition>
+                  <transition name="el-zoom-in-bottom">
+                      <el-button v-show="showSaveFlag" @click.stop="editRow(scope.row)"
+                                 type="success" size="small" :loading="saveLoading" round>保存</el-button>
+                  </transition>
+                  <el-button type="danger" size="small" round>删除</el-button>
+              </el-row>
           </template>
         </el-table-column>
       </el-table>
@@ -79,7 +88,14 @@ export default {
         { prop: 'remarks', label: '备注', width: '250' }
       ],
       tableData: [],
-      expends: []
+      form: {
+        amount: '',
+        spend_category: '',
+        occur_time: '',
+        remarks: '',
+      },
+      showSaveFlag: false,
+      saveLoading: false
     }
   },
   async created() {
@@ -98,8 +114,13 @@ export default {
         }
       }
     },
-    handleClick(obj) {
-      console.log(obj)
+    editRow(row) {
+      // 如果showSaveFlag为true时表示当前为保存按钮
+      if (this.showSaveFlag) {
+        this.saveLoading = true
+      }
+      this.$refs.refTable.toggleRowExpansion(row)
+      this.saveLoading = false
     },
     handleDelete(val) {
       this.$confirm('此操作将永久删除该图书, 是否继续?', '提示', {
@@ -117,18 +138,17 @@ export default {
         }
       })
     },
-    rowClick() {},
+    // eslint-disable-next-line
+    rowClick(row, column, event) {
+      this.$refs.refTable.toggleRowExpansion(row)
+    },
     onQueryChange(val) {
       this.$message(`${val}`)
     },
     // eslint-disable-next-line
-    expandChange(row,expandedRows) {
-      // 当用户对某一行展开或者关闭的时候会触发该事件
-      console.log(expandedRows)
-      /*expandedRows.forEach((item,index) => {
-        this.recordTypes.push(item)
-      })*/
-      console.log(this.expends)
+    expandChange(row, expandedRows) {
+      // 显示保存按钮
+      this.showSaveFlag = !this.showSaveFlag
     }
   },
 }
