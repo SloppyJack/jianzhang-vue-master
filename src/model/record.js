@@ -39,5 +39,10 @@ class Record {
       handleError: true,
     })
   }
+
+  editRecord(id, info) {
+    const res = put(`v1/record/${id}`, info)
+    return res
+  }
 }
 export default new Record()

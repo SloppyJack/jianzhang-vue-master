@@ -55,11 +55,11 @@
               <el-row :gutter="20">
                   <transition name="el-zoom-in-top">
                       <!-- 使用@click.stop防止点击事件冒泡 -->
-                      <el-button v-show="!showSaveFlag" @click.stop="editRow(scope.row)" type="primary" size="small" round>编辑</el-button>
+                      <el-button v-show="!showSaveFlag[scope.row.id]" @click.stop="editRow(scope.row)" type="primary" size="small" round>编辑</el-button>
                   </transition>
                   <transition name="el-zoom-in-bottom">
-                      <el-button v-show="showSaveFlag" @click.stop="editRow(scope.row)"
-                                 type="success" size="small" :loading="saveLoading" round>保存</el-button>
+                      <el-button v-show="showSaveFlag[scope.row.id]" @click.stop="editRow(scope.row)"
+                                 type="success" size="small" :loading="saveLoading[scope.row.id]" round>保存</el-button>
                   </transition>
                   <el-button type="danger" size="small" round>删除</el-button>
               </el-row>
@@ -94,8 +94,8 @@ export default {
         occur_time: '',
         remarks: '',
       },
-      showSaveFlag: false,
-      saveLoading: false
+      showSaveFlag: [], // 此处使用数组
+      saveLoading: [] // loading的状态也须使用数组
     }
   },
   async created() {
@@ -104,6 +104,7 @@ export default {
     this.loading = false
   },
   methods: {
+    // 获取记账列表
     async getRecords() {
       try {
         const records = await record.getRecords()
@@ -114,13 +115,16 @@ export default {
         }
       }
     },
-    editRow(row) {
+    // 编辑记账信息
+    async editRow(row) {
       // 如果showSaveFlag为true时表示当前为保存按钮
-      if (this.showSaveFlag) {
-        this.saveLoading = true
+      if (this.showSaveFlag[row.id]) {
+        this.saveLoading[row.id] = true
+        // 开始保存
+        await record.editRecord(row.id, this.form)
       }
       this.$refs.refTable.toggleRowExpansion(row)
-      this.saveLoading = false
+      this.saveLoading[row.id] = false
     },
     handleDelete(val) {
       this.$confirm('此操作将永久删除该图书, 是否继续?', '提示', {
@@ -147,8 +151,14 @@ export default {
     },
     // eslint-disable-next-line
     expandChange(row, expandedRows) {
-      // 显示保存按钮
-      this.showSaveFlag = !this.showSaveFlag
+      console.log(this.showSaveFlag)
+      // 给form赋值
+      this.form.amount = row.amount
+      this.form.spend_category = row.spend_category.name
+      this.form.occur_time = row.occur_time
+      this.form.remarks = row.remarks
+      // 是否显示某一行的保存按钮
+      this.showSaveFlag[row.id] = !this.showSaveFlag[row.id]
     }
   },
 }
