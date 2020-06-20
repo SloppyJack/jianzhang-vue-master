@@ -40,8 +40,8 @@ class Record {
     })
   }
 
-  editRecord(id, info) {
-    const res = put(`v1/record/${id}`, info)
+  async editRecord(id, info) {
+    const res = await put(`v1/record/${id}`, info)
     return res
   }
 }

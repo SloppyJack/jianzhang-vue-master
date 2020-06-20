@@ -117,14 +117,23 @@ export default {
     },
     // 编辑记账信息
     async editRow(row) {
-      // 如果showSaveFlag为true时表示当前为保存按钮
       if (this.showSaveFlag[row.id]) {
-        this.saveLoading[row.id] = true
-        // 开始保存
-        await record.editRecord(row.id, this.form)
+        // 如果showSaveFlag为true时表示当前为保存按钮
+        this.$set(this.saveLoading, [row.id], true)
+        console.log(row)
+        try {
+          // 开始保存
+          await record.editRecord(row.id, this.form)
+          this.$refs.refTable.toggleRowExpansion(row)
+          this.$set(this.saveLoading, [row.id], false)
+        } catch (e) {
+          this.$set(this.saveLoading, [row.id], false)
+          console.log(e)
+        }
+      } else {
+        // 编辑按钮
+        this.$refs.refTable.toggleRowExpansion(row)
       }
-      this.$refs.refTable.toggleRowExpansion(row)
-      this.saveLoading[row.id] = false
     },
     handleDelete(val) {
       this.$confirm('此操作将永久删除该图书, 是否继续?', '提示', {
@@ -151,7 +160,6 @@ export default {
     },
     // eslint-disable-next-line
     expandChange(row, expandedRows) {
-      console.log(this.showSaveFlag)
       // 给form赋值
       this.form.amount = row.amount
       this.form.spend_category = row.spend_category.name
@@ -159,6 +167,9 @@ export default {
       this.form.remarks = row.remarks
       // 是否显示某一行的保存按钮
       this.showSaveFlag[row.id] = !this.showSaveFlag[row.id]
+    },
+    judgeIsTrue(val) {
+      return val === true
     }
   },
 }
