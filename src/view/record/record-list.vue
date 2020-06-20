@@ -162,7 +162,7 @@ export default {
     expandChange(row, expandedRows) {
       // 给form赋值
       this.form.amount = row.amount
-      this.form.spend_category = row.spend_category.name
+      this.form.spend_category = row.spend_category.id
       this.form.occur_time = row.occur_time
       this.form.remarks = row.remarks
       // 是否显示某一行的保存按钮
