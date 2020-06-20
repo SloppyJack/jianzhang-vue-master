@@ -7,7 +7,9 @@
         <div class="header-right">
           <lin-search @query="onQueryChange" placeholder="请输入备注" />
           <div style="margin-left:30px">
-            <el-button type="primary" @click="dialogTableVisible = !dialogTableVisible">列操作</el-button>
+              <router-link to="/record/add">
+                  <el-button type="primary">去记账</el-button>
+              </router-link>
           </div>
         </div>
       </div>
@@ -47,21 +49,39 @@
                 </div>
               </template>
         </el-table-column>
-        <el-table-column v-for="(item,index) in tableColumn" :key="index" :label="item.label"
-                         :prop="item.prop" :min-width="item.width">
-        </el-table-column>
+        <!--<el-table-column v-for="(item,index) in tableColumn" :key="index" :label="item.label"
+                         :prop="item.prop" :min-width="item.width"
+                         :filters="item.filters">
+        </el-table-column>-->
+        <el-table-column label="金额" prop="amount" :min-width="200"></el-table-column>
+        <el-table-column label="花费类别" prop="spend_category.name" :filters="spendCategoryFilters" :min-width="200"></el-table-column>
+        <el-table-column label="交易时间" prop="occur_time" :min-width="250"></el-table-column>
+        <el-table-column label="备注" prop="remarks" :min-width="250"></el-table-column>
         <el-table-column fixed="right" label="操作" width="200">
           <template slot-scope="scope">
               <el-row :gutter="20">
-                  <transition name="el-zoom-in-top">
+                  <el-col :span="12">
+                  <transition name="el-zoom-in-bottom">
                       <!-- 使用@click.stop防止点击事件冒泡 -->
                       <el-button v-show="!showSaveFlag[scope.row.id]" @click.stop="editRow(scope.row)" type="primary" size="small" round>编辑</el-button>
                   </transition>
                   <transition name="el-zoom-in-bottom">
-                      <el-button v-show="showSaveFlag[scope.row.id]" @click.stop="editRow(scope.row)"
+                      <el-button style="margin-left: 0px" v-show="showSaveFlag[scope.row.id]" @click.stop="editRow(scope.row)"
                                  type="success" size="small" :loading="saveLoading[scope.row.id]" round>保存</el-button>
                   </transition>
-                  <el-button type="danger" size="small" round>删除</el-button>
+                  </el-col>
+                  <el-col :span="12">
+                  <el-popconfirm
+                          confirmButtonText='好的'
+                          cancelButtonText='不用了'
+                          icon="el-icon-info"
+                          iconColor="red"
+                          title="确定删除这一条记录吗？"
+                          @onConfirm="handleDelete(scope.row.id)"
+                  >
+                      <el-button slot="reference" @click.stop="" type="danger" size="small" round>删除</el-button>
+                  </el-popconfirm>
+                  </el-col>
               </el-row>
           </template>
         </el-table-column>
@@ -81,12 +101,6 @@ export default {
   data() {
     return {
       loading: false,
-      tableColumn: [
-        { prop: 'amount', label: '金额', width: '200' },
-        { prop: 'spend_category.name', label: '花费类别', width: '200' },
-        { prop: 'occur_time', label: '交易时间', width: '250' },
-        { prop: 'remarks', label: '备注', width: '250' }
-      ],
       tableData: [],
       form: {
         amount: '',
@@ -95,13 +109,16 @@ export default {
         remarks: '',
       },
       showSaveFlag: [], // 此处使用数组
-      saveLoading: [] // loading的状态也须使用数组
+      saveLoading: [], // loading的状态也须使用数组
+      spendCategoryFilters: []
     }
   },
   async created() {
     this.loading = true
     await this.getRecords()
     this.loading = false
+    // 初始化类别的过滤器
+    this.initSpendCategoryFileters()
   },
   methods: {
     // 获取记账列表
@@ -120,12 +137,17 @@ export default {
       if (this.showSaveFlag[row.id]) {
         // 如果showSaveFlag为true时表示当前为保存按钮
         this.$set(this.saveLoading, [row.id], true)
-        console.log(row)
         try {
+          // 给form赋值
+          this.form.amount = row.amount
+          this.form.spend_category = row.spend_category.id
+          this.form.occur_time = row.occur_time
+          this.form.remarks = row.remarks
           // 开始保存
-          await record.editRecord(row.id, this.form)
+          const res = await record.editRecord(row.id, this.form)
           this.$refs.refTable.toggleRowExpansion(row)
           this.$set(this.saveLoading, [row.id], false)
+          this.$message.success(`${res.message}`)
         } catch (e) {
           this.$set(this.saveLoading, [row.id], false)
           console.log(e)
@@ -135,21 +157,16 @@ export default {
         this.$refs.refTable.toggleRowExpansion(row)
       }
     },
-    handleDelete(val) {
-      this.$confirm('此操作将永久删除该图书, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      }).then(async () => {
-        const res = await book.delectBook(val.row.id)
-        if (res.code < window.MAX_SUCCESS_CODE) {
-          this.getBooks()
-          this.$message({
-            type: 'success',
-            message: `${res.message}`,
-          })
-        }
-      })
+    async handleDelete(id) {
+      this.loading = true
+      try {
+        const res = await record.deleteRecord(id)
+        this.$message.success(`${res.message}`)
+        this.loading = false
+      } catch (e) {
+        this.loading = false
+        console.log(e)
+      }
     },
     // eslint-disable-next-line
     rowClick(row, column, event) {
@@ -160,16 +177,17 @@ export default {
     },
     // eslint-disable-next-line
     expandChange(row, expandedRows) {
-      // 给form赋值
-      this.form.amount = row.amount
-      this.form.spend_category = row.spend_category.id
-      this.form.occur_time = row.occur_time
-      this.form.remarks = row.remarks
       // 是否显示某一行的保存按钮
       this.showSaveFlag[row.id] = !this.showSaveFlag[row.id]
     },
-    judgeIsTrue(val) {
-      return val === true
+    initSpendCategoryFileters() {
+      // eslint-disable-next-line
+      this.tableData.forEach((item,index) => {
+        this.spendCategoryFilters.push(
+          // eslint-disable-next-line
+          { 'text': item.spend_category.name, 'value': item.spend_category.id }
+        )
+      })
     }
   },
 }

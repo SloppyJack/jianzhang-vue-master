@@ -44,5 +44,10 @@ class Record {
     const res = await put(`v1/record/${id}`, info)
     return res
   }
+
+  async deleteRecord(id) {
+    const res = await _delete(`v1/record/${id}`)
+    return res
+  }
 }
 export default new Record()
